@@ -318,7 +318,7 @@ get_Delta_Y <- function(SIRD_mod){
       kplus1_diff_death = diff(D),
       kplus1_diff_inf = diff(Cum_inf)) %>%
     mutate(kplus1_first_day=mod_vax_id[-1],
-           k_first_day = mod_vax_id[-length(mod_vax_id)]) %>%                                      # `kplus1_first_day`: the first DAY of the NEXT interval
+           k_first_day = mod_vax_id[-length(mod_vax_id)]) %>%                   # `kplus1_first_day`: the first DAY of the NEXT interval
     select(vax_id, prob_vax, kplus1_first_day, k_first_day, kplus1_diff_death, kplus1_diff_inf) %>%             
     mutate(kplus1_prob_death = kplus1_diff_death/(3e5*prob_vax),
            kplus1_prob_inf = kplus1_diff_inf/(3e5*prob_vax)) %>%
@@ -340,7 +340,7 @@ disc_survivors <- SIRD_mod %>%
   mutate(prob_vax = rep(RHO_vec, length(mod_vax_id))) %>%
   mutate(k_survivors_death = 3e5*prob_vax-D,
          k_survivors_inf = 3e5*prob_vax-Cum_inf) %>%
-  select(vax_id, time_id, k_survivors_death, k_survivors_inf) # rename time_id to k_first_day
+  select(vax_id, time_id, k_survivors_death, k_survivors_inf)                   # time_id is essentially k_first_day
 
 disc_survivors$time_id <- as.numeric(disc_survivors$time_id)
 
