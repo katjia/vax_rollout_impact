@@ -21,7 +21,7 @@ options(digits = 15)
 # 1 = Base simulations (varying mu, fixed beta)
 # 2 = Varying beta simulations (varying beta, fixed mu) 
 # 3 = Realistic parameters (influenza, measles, SARS-CoV-2)
-SIMULATION_MODE <- 2
+SIMULATION_MODE <- 3
 
 # Analysis mode:
 # TRUE = Calculate and output absolute/percentage differences
