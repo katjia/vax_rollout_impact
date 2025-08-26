@@ -21,7 +21,7 @@ options(digits = 15)
 # 1 = Base simulations (varying mu, fixed beta)
 # 2 = Varying beta simulations (varying beta, fixed mu) 
 # 3 = Realistic parameters (influenza, measles, SARS-CoV-2)
-SIMULATION_MODE <- 1
+SIMULATION_MODE <- 2
 
 # Analysis mode:
 # TRUE = Calculate and output absolute/percentage differences
@@ -47,8 +47,8 @@ dt <- 1
 # Strategy 2: Vaccinate at 99 weekly time points
 #   - 1% vaccinated at the beginning of each week (Weeks 0–98), with 1% remaining unvaccinated
 
-# strategy <- 1 
-strategy <- 2
+strategy <- 1 
+# strategy <- 2
 
 # HELPER FUNCTIONS =============================================================
 
@@ -486,9 +486,11 @@ if(CALCULATE_DIFFERENCES) {
   write.csv(averted_outcomes, 
             paste0("3_tables/averted_outcomes_", mode_suffix, "_strategy", strategy, ".csv"), 
             row.names = FALSE)
-  write.csv(avertible_outcomes, 
+  if(SIMULATION_MODE!=2){
+    write.csv(avertible_outcomes, 
             paste0("3_tables/avertible_outcomes_", mode_suffix, "_strategy", strategy, ".csv"), 
             row.names = FALSE)
+  }
   
   cat("Difference tables saved to 3_tables/")
 }
