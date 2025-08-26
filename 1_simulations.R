@@ -21,7 +21,7 @@ options(digits = 15)
 # 1 = Base simulations (varying mu, fixed beta)
 # 2 = Varying beta simulations (varying beta, fixed mu) 
 # 3 = Realistic parameters (influenza, measles, SARS-CoV-2)
-SIMULATION_MODE <- 3
+SIMULATION_MODE <- 1
 
 # Analysis mode:
 # TRUE = Calculate and output absolute/percentage differences
@@ -162,14 +162,14 @@ res <- config$res
 scenarios <- config$scenarios
 scenario_labels <- config$scenario_labels
 
-# Initialize tracking variables
+# Initialize placeholders for outputs
 prob_outcome_all <- prob_outcome_vax_status_all <- dynamics_scenario_all <- hazards_outcome_by_vax_status_all <- hazards_outcome_by_vax_time_all <- NULL
 
 # MAIN SIMULATION FUNCTION =====================================================
 set_SIRD_parms_and_run_model <- function(scenario=1){
   
   # Define base parameters
-  gamma <- 0.07
+  gamma <- 0.07 # may be overridden for SIMULATION_MODE==3
   beta <- 0.25  # Default beta, may be overridden for SIMULATION_MODE == 2
   
   # Set parameters based on simulation mode
@@ -265,7 +265,7 @@ set_SIRD_parms_and_run_model <- function(scenario=1){
   # Run simulation
   for(t in 1:(length(mod_time_id)-1)){
     
-      # Update force of infection dynamically (for varying beta simulations)
+      # Update force of infection dynamically
       lambda_t <- beta * sum(SIRD_mod["I",,t])/sum(SIRD_mod[c("S","I","R"),,t])
       S_to_I[,t] <- theta[,t]*lambda_t
     
@@ -340,7 +340,7 @@ disc_survivors <- SIRD_mod %>%
   mutate(prob_vax = rep(RHO_vec, length(mod_vax_id))) %>%
   mutate(k_survivors_death = 3e5*prob_vax-D,
          k_survivors_inf = 3e5*prob_vax-Cum_inf) %>%
-  select(vax_id, time_id, k_survivors_death, k_survivors_inf)
+  select(vax_id, time_id, k_survivors_death, k_survivors_inf) # rename time_id to k_first_day
 
 disc_survivors$time_id <- as.numeric(disc_survivors$time_id)
 

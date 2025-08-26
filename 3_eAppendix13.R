@@ -44,7 +44,7 @@ obs_dataset <- survival_hazard_by_vax_status %>%
 # OUTPUT TABLE S11
 # use 9 digits 
 (tableS11_9digits <- round(obs_dataset, 9))
-if(SIMULATION_MODE==1 & strategy==1 & SCENARIO == 1) write.csv(tableS11_9digits, "~/Documents/GitHub/direct_impact_estimands/4_tables/tableS11.csv")
+if(SIMULATION_MODE==1 & strategy==1 & SCENARIO == 1) write.csv(tableS11_9digits, "3_tables/tableS11.csv")
 
 # add survivors and hazard in the next interval as a separate column
 copy_obs_dataset <- obs_dataset %>%
@@ -96,9 +96,10 @@ obs_dataset %>%
 cum_Y <- get_Y(SIRD_mod)
 
 tableS12_9digits <- cum_Y %>% 
+  select(vax_id, prob_vax, prob_death) %>%
   mutate_if(is.numeric, round, digits=9)
 
-if(SIMULATION_MODE == 1 & strategy == 1 & SCENARIO == 1) write.csv(tableS12_9digits, "~/Documents/GitHub/direct_impact_estimands/4_tables/tableS12.csv")
+if(SIMULATION_MODE == 1 & strategy == 1 & SCENARIO == 1) write.csv(tableS12_9digits, "3_tables/tableS12.csv")
 
 unbiased_estimator <- causal_CID(cum_Y) 
 unbiased_estimator["averted_deaths"]
