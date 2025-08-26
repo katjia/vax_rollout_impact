@@ -47,8 +47,8 @@ dt <- 1
 # Strategy 2: Vaccinate at 99 weekly time points
 #   - 1% vaccinated at the beginning of each week (Weeks 0–98), with 1% remaining unvaccinated
 
-strategy <- 1 
-# strategy <- 2
+# strategy <- 1 
+strategy <- 2
 
 # HELPER FUNCTIONS =============================================================
 
