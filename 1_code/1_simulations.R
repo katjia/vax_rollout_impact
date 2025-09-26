@@ -648,6 +648,9 @@ if(SIMULATION_MODE==1 & strategy==1){
                                       scenarios == "9"~"9: IFR=100%; \n VE inf=90%; \n  VE death=90%")) %>%
     ggplot() +
     geom_line(aes(x=as.numeric(time_id), y=Freq, col=vax_id, group=vax_id)) +
+    scale_color_manual(values = c("1" = "forestgreen", 
+                                  "61" = "darkblue", 
+                                  "121" = "darkred")) +
     facet_grid(scenario_label~comp_label) +
     lims(x=c(0,121)) +
     theme_minimal() +
