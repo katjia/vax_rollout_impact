@@ -21,7 +21,7 @@ options(digits = 15)
 # 1 = Base simulations (varying mu, fixed beta)
 # 2 = Varying beta simulations (varying beta, fixed mu) 
 # 3 = Realistic parameters (influenza, measles, SARS-CoV-2)
-SIMULATION_MODE <- 1
+SIMULATION_MODE <- 2
 
 # Analysis mode:
 # TRUE = Calculate and output absolute/percentage differences
@@ -492,8 +492,129 @@ if(CALCULATE_DIFFERENCES) {
             row.names = FALSE)
   }
   
-  cat("Difference tables saved to 3_tables/")
-}
+  cat("Difference tables saved to 3_tables/n")
+  
+  # CREATE HEATMAPS ===========================================================
+  cat("Creating heatmaps for abs_diff and pct_diff...n")
+  
+  # Prepare data for heatmaps
+  # abs_diff and pct_diff are currently transposed matrices with dimensions:
+  # Rows: averted_infections, avertible_infections, averted_deaths, avertible_deaths (indices 3,4,1,2 respectively)
+  # Columns: scenarios 1-9
+  
+  # Function to reshape data for heatmap (3x3 grid)
+  prepare_heatmap_data <- function(data_matrix, row_index, outcome_type, sim_mode) {
+    # Extract the relevant row
+    values <- data_matrix[row_index, ]
+    
+    # Reshape into 3x3 matrix
+    # Rows represent IFR/beta levels, Columns represent VE combinations
+    # Scenarios 1,2,3 = first VE combination (VE_inf=90%, VE_death=0%)
+    # Scenarios 4,5,6 = second VE combination (VE_inf=0%, VE_death=90%)
+    # Scenarios 7,8,9 = third VE combination (VE_inf=90%, VE_death=90%)
+    
+    heatmap_matrix <- matrix(c(values[1], values[2], values[3],
+                               values[4], values[5], values[6],
+                               values[7], values[8], values[9]),
+                             nrow = 3, ncol = 3, byrow = TRUE)
+    
+    # Create data frame for ggplot
+    df <- data.frame(
+      Row = rep(1:3, each = 3),
+      Col = rep(1:3, times = 3),
+      Value = as.vector(t(heatmap_matrix))
+    )
+    
+    # Set row and column labels based on simulation mode
+    if(sim_mode == 1) {
+      col_labs <- c("IFR=1%", "IFR=10%", "IFR=100%")
+    } else if(sim_mode == 2) {
+      col_labs <- c("β=0.15", "β=0.2", "β=0.25")
+    }
+    
+    row_labs <- c("VE inf=90%, \n  VE death=0",
+                  "VE inf=0, \n  VE death=90%",
+                  "VE inf=90%, \n  VE death=90%")
+    
+    df$Row_Label <- factor(df$Row, levels = 1:3, labels = row_labs)
+    df$Col_Label <- factor(df$Col, levels = 1:3, labels = col_labs)
+    
+    return(df)
+  }
+  
+  # Create heatmaps for each outcome type
+  create_heatmap <- function(df, value_type) {
+    
+    if(SIMULATION_MODE == 1) {
+      upper_limit <- ifelse(value_type == "Abs. Diff.", 42000, 120)
+    } else if(SIMULATION_MODE == 2) {
+      upper_limit <- ifelse(value_type == "Abs. Diff.", 30000, 50)
+    }
+    p <- ggplot(df, aes(x = Col_Label, y = Row_Label, fill = Value)) +
+      geom_tile(color = "white", linewidth = 0.5) +
+      geom_text(aes(label = sprintf("%.2f", Value)), color = "white", size = 5) +
+      scale_fill_viridis_c(option = "viridis", name = value_type, limits = c(0, upper_limit)) +
+      scale_x_discrete(position = "top") +
+      scale_y_discrete(labels = function(x) as.character(x), limits = rev(levels(df$Row_Label))) +
+      labs(x = "", y = "") +
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(angle = 0, hjust = 0.5, size = 12),
+        axis.text.y = element_text(size = 12),
+        legend.position = "right",
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        panel.grid = element_blank()
+      )
+    return(p)
+  }
+  
+  # Prepare data for all four heatmaps
+  # For AVERTED outcomes
+  averted_inf_abs_df <- prepare_heatmap_data(abs_diff, 3, "infections", SIMULATION_MODE)  # row 3 = averted_infections
+  averted_death_abs_df <- prepare_heatmap_data(abs_diff, 1, "deaths", SIMULATION_MODE)    # row 1 = averted_deaths
+  averted_inf_pct_df <- prepare_heatmap_data(pct_diff, 3, "infections", SIMULATION_MODE)
+  averted_death_pct_df <- prepare_heatmap_data(pct_diff, 1, "deaths", SIMULATION_MODE)
+  
+  # Create averted outcome heatmaps
+  h1 <- create_heatmap(averted_inf_abs_df, "Abs. Diff.")
+  h2 <- create_heatmap(averted_death_abs_df, "Abs. Diff.")
+  h3 <- create_heatmap(averted_inf_pct_df, "% Diff.")
+  h4 <- create_heatmap(averted_death_pct_df, "% Diff.")
+  
+  # Arrange plots 
+  col1 <- ggplot() + annotate(geom = 'text', x=0.1, y=0.1, label="Infection", size = 5, hjust=1) + theme_void() 
+  col2 <- ggplot() + annotate(geom = 'text', x=0.1, y=0.1, label="Death", size = 5, hjust=1) + theme_void() 
+  
+  layoutplot <- "
+aaaaaaaabbbbbbbb
+ggggggggeeeeeeee
+ggggggggeeeeeeee
+ggggggggeeeeeeee
+ggggggggeeeeeeee
+ggggggggeeeeeeee
+ffffffffhhhhhhhh
+ccccccccdddddddd
+ccccccccdddddddd
+ccccccccdddddddd
+ccccccccdddddddd
+ccccccccdddddddd
+"
+  
+  plotlist_averted <-
+    list(
+      a = col1,
+      b = col2,
+      g = h1,
+      e = h2,
+      f = col1,
+      h = col2,
+      c = h3,
+      d = h4)
+  
+  averted <- wrap_plots(plotlist_averted, design = layoutplot) 
+  
+  if(SIMULATION_MODE==1 | SIMULATION_MODE == 2) ggsave(paste0("2_figures/heatmap_averted_outcomes_", mode_suffix, "_strategy", strategy, ".png"), averted, width = 12, height = 7, dpi=300, units="in")
 
 # PLOTTING SECTION =============================================================
 
