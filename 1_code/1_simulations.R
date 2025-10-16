@@ -21,7 +21,7 @@ options(digits = 15)
 # 1 = Base simulations (varying mu, fixed beta)
 # 2 = Varying beta simulations (varying beta, fixed mu) 
 # 3 = Realistic parameters (influenza, measles, SARS-CoV-2)
-SIMULATION_MODE <- 1
+SIMULATION_MODE <- 3
 
 # Analysis mode:
 # TRUE = Calculate and output absolute/percentage differences
@@ -219,7 +219,7 @@ set_SIRD_parms_and_run_model <- function(scenario=1){
     
     if(scenario == 1) { # Influenza
       beta <- round(1.95 * 0.21, 2)
-      theta <- create_ve_matrix(vax_length, N_t, mod_vax_id, 0.66)  # VE inf = 34%
+      theta <- create_ve_matrix(vax_length, N_t, mod_vax_id, 0.64)  # VE inf = 36%
       kappa <- create_ve_matrix(vax_length, N_t, mod_vax_id, 0.69)  # VE death = 31%
       mu <- 0.03
       gamma <- 0.21
@@ -491,10 +491,12 @@ if(CALCULATE_DIFFERENCES) {
             paste0("3_tables/avertible_outcomes_", mode_suffix, "_strategy", strategy, ".csv"), 
             row.names = FALSE)
   }
-  
+
   cat("Difference tables saved to 3_tables/n")
-  
+}
   # CREATE HEATMAPS ===========================================================
+if(SIMULATION_MODE==1 | SIMULATION_MODE == 2){
+  
   cat("Creating heatmaps for abs_diff and pct_diff...n")
   
   # Prepare data for heatmaps
@@ -614,8 +616,8 @@ ccccccccdddddddd
   
   averted <- wrap_plots(plotlist_averted, design = layoutplot) 
   
-  if(SIMULATION_MODE==1 | SIMULATION_MODE == 2) ggsave(paste0("2_figures/heatmap_averted_outcomes_", mode_suffix, "_strategy", strategy, ".png"), averted, width = 12, height = 7, dpi=300, units="in")
-
+  ggsave(paste0("2_figures/heatmap_averted_outcomes_", mode_suffix, "_strategy", strategy, ".png"), averted, width = 12, height = 7, dpi=300, units="in")
+}
 # PLOTTING SECTION =============================================================
 
 # Helper function to create y-axis scales
@@ -769,9 +771,9 @@ if(SIMULATION_MODE==1 & strategy==1){
                                       scenarios == "9"~"9: IFR=100%; \n VE inf=90%; \n  VE death=90%")) %>%
     ggplot() +
     geom_line(aes(x=as.numeric(time_id), y=Freq, col=vax_id, group=vax_id)) +
-    scale_color_manual(values = c("1" = "forestgreen", 
-                                  "61" = "darkblue", 
-                                  "121" = "darkred")) +
+    scale_color_manual(values = c("1" = "#00A65E", 
+                                  "61" = "#0072B2", 
+                                  "121" = "#D55E00")) +
     facet_grid(scenario_label~comp_label) +
     lims(x=c(0,121)) +
     theme_minimal() +
