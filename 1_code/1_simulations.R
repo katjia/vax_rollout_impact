@@ -767,7 +767,7 @@ if(SIMULATION_MODE==1 & strategy==1){
                                       scenarios == "5"~"5: IFR=10%; \n VE inf=0; \n  VE death=90%",
                                       scenarios == "6"~"6: IFR=100%; \n VE inf=0; \n  VE death=90%",
                                       scenarios == "7"~"7: IFR=1%; \n VE inf=90%; \n  VE death=90%",
-                                      scenarios == "8"~"5: IFR=10%; \n VE inf=90%; \n  VE death=90%",
+                                      scenarios == "8"~"8: IFR=10%; \n VE inf=90%; \n  VE death=90%",
                                       scenarios == "9"~"9: IFR=100%; \n VE inf=90%; \n  VE death=90%")) %>%
     ggplot() +
     geom_line(aes(x=as.numeric(time_id), y=Freq, col=vax_id, group=vax_id)) +
